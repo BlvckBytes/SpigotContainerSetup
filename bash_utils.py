@@ -1,3 +1,4 @@
+"""
 MIT License
 
 Copyright (c) 2023 BlvckBytes
@@ -19,3 +20,36 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
+
+import subprocess
+
+from logger import logln
+
+def run_bash(command, cwd=None):
+  """
+  Run a bash command as a subprocess and respond with the STDOUT and STDERR strings as a tuple
+  """
+
+  logln(f'Running bash command \'{command}\'')
+
+  output, error = subprocess.Popen(
+    command.split(),
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    cwd=cwd
+  ).communicate()
+
+  return (output.decode('utf-8'), error.decode('utf-8'))
+
+def run_bash_live(command, cwd=None):
+  """
+  Run a bash command as a subprocess, print STDOUT and STDERR and only return it's exit-code
+  """
+
+  logln(f'Running live bash command \'{command}\'')
+
+  process = subprocess.Popen(command.split(), cwd=cwd)
+  process.communicate()
+  return process.wait()

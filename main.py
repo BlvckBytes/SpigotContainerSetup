@@ -1,3 +1,4 @@
+"""
 MIT License
 
 Copyright (c) 2023 BlvckBytes
@@ -19,3 +20,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+"""
+
+from setup_java import setup_java
+from setup_spigot import build_spigot
+
+# Prerequisites: Python3, Git
+
+def main():
+  setup_java(16)
+  build_spigot('1.17', '/tmp')
+
+if __name__ == '__main__':
+  main()
