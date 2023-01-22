@@ -39,6 +39,7 @@ def get_jdk_url(version, arch):
 
   :param int version: Java major version (18, 17, 16, 11, 8)
   :param str arch: Architecture string (aarch64, arm, x64)
+  :return: JDK URL on success, None on an unsupported version
   """
 
   if version == 18:
@@ -57,19 +58,26 @@ def get_jdk_url(version, arch):
     return f'https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u312-b07/OpenJDK8U-jdk_{arch}_linux_hotspot_8u312b07.tar.gz'
 
   print(f'Invalid java version requested: {version}', file=sys.stderr)
-  sys.exit(1)
+  return None
 
 def get_jdk_path(version):
   """
   Get the absolute path of the containing folder for a specific JDK version on the system
 
   :param int version: Java major version in question
+  :return: JDK Path on success, None if the JDK could not be located
   """
 
   matches = glob.glob(f'/usr/lib/jvm/jdk-{version}*')
   return None if len(matches) == 0 else matches[0]
 
 def decide_system_architecture():
+  """
+  Decides which architecture suits the current system
+
+  :return: Architecture string on success, None if the current system's architecture is unsupported
+  """
+
   machine = platform.machine().lower()
 
   if machine == 'arm64':
@@ -79,19 +87,27 @@ def decide_system_architecture():
     return 'aarch64'
 
   logln_error(f'Unsupported system architecture: {machine}')
-  sys.exit(1)
+  return None
 
 def setup_java(version):
   """
   Setup the provided java version as the default JVM
+
+  :return: True on success, False on failure
   """
 
   arch = decide_system_architecture()
+  if arch is None:
+    return False
+
   jdk_path = get_jdk_path(version)
 
   if jdk_path is None:
     logln(f'JDK {version} not yet downloaded, initializing download...')
     jdk_url = get_jdk_url(version, arch)
+
+    if jdk_url is None:
+      return False
 
     with requests.get(jdk_url, stream=True) as rx:
       # check header to get content length, in bytes
@@ -112,7 +128,7 @@ def setup_java(version):
 
   if jdk_path is None:
     logln_error(f'Could not find JDK {version} on the system')
-    sys.exit(1)
+    return False
 
   logln(f'Setting JDK {version} as a default')
 
@@ -122,4 +138,6 @@ def setup_java(version):
 
   if len(cerr) != 0:
     logln_error(f'Could not link JDK {version} as a default!')
-    sys.exit(1)
+    return False
+
+  return True

@@ -32,6 +32,15 @@ from tqdm_wrapper import tqdm_wrapper
 from logger import logln, logln_error
 
 def build_spigot(rev, output_dir):
+  """
+  Downloads the BuildTools JAR file into a temporary directory and invokes it by passing
+  the desired revision as well as the output directory path as arguments
+
+  :param str rev: Revision of the minecraft server (1.8, 1.9, 1.17, ...)
+  :param str output_dir: Output directory to put the final JAR file into
+  :return: Final JAR path on success, None on errors
+  """
+
   container_dir = '/tmp/BuildTools'
 
   if not os.path.isdir(container_dir):
@@ -41,6 +50,11 @@ def build_spigot(rev, output_dir):
     os.makedirs(output_dir)
 
   jar_path = os.path.join(container_dir, 'BuildTools.jar')
+  output_path = os.path.join(output_dir, f'spigot-{rev}.jar')
+
+  if os.path.isfile(output_path):
+    logln(f'Jar for revision {rev} already existed')
+    return output_path
 
   if not os.path.isfile(jar_path):
     buildtools_url = 'https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar'
@@ -55,6 +69,11 @@ def build_spigot(rev, output_dir):
 
   if exit_code != 0:
     logln_error(f'BuildTools yielded invalid exit-code {exit_code}')
-    sys.exit(1)
+    return None
 
-  logln(f'Jar successfully built and written into {container_dir}')
+  if not os.path.isfile(output_path):
+    logln_error(f'Could not locate output jar in directory {output_dir}')
+    return None
+
+  logln(f'Jar successfully built and written into {output_dir}')
+  return output_path
