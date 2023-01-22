@@ -25,43 +25,21 @@ SOFTWARE.
 import os
 import sys
 
-from setup_java import setup_java
-from setup_spigot import build_spigot
+from setup_spigot import setup_spigot
 from bash_utils import run_bash_live
 from logger import logln_error
 
 # Prerequisites: Python3, Git
 
-def accept_eula(server_dir):
-  """
-  Creates or overrides eula.txt at the provided directory so that it contains an eula accepting statement
-
-  :param str server_dir: Path of the folder where the server is executed at
-  """
-
-  with open(os.path.join(server_dir, 'eula.txt'), 'w') as f:
-    f.write('eula=true\n')
-
 def main():
-  home_dir = os.path.expanduser('~')
-  server_dir = os.path.join(home_dir, 'spigot')
-
-  if not os.path.isdir(server_dir):
-    os.mkdirs(server_dir)
-
-  if not setup_java(16):
-    logln_error(f'Could not set up the required java version, exiting')
-    sys.exit(1)
-
-  jar_path = build_spigot('1.17', server_dir)
+  rev = '1.18'
+  jar_path = setup_spigot(rev)
 
   if jar_path is None:
-    logln_error(f'Could not build the required spigot jar, exiting')
+    logln_error(f'Could not set up spigot for minecraft-revision {rev}, exiting')
     sys.exit(1)
 
-  accept_eula(server_dir)
-
-  run_bash_live(f'java -jar {jar_path} nogui', server_dir)
+  run_bash_live(f'java -jar {os.path.basename(jar_path)} nogui', os.path.dirname(jar_path))
 
 if __name__ == '__main__':
   main()

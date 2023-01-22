@@ -24,12 +24,12 @@ SOFTWARE.
 
 import urllib.request
 import os
-import sys
 
 from tqdm import tqdm
 from bash_utils import run_bash_live
 from tqdm_wrapper import tqdm_wrapper
 from logger import logln, logln_error
+from setup_java import setup_java
 
 def build_spigot(rev, output_dir):
   """
@@ -77,3 +77,75 @@ def build_spigot(rev, output_dir):
 
   logln(f'Jar successfully built and written into {output_dir}')
   return output_path
+
+def decide_java_version(rev):
+  """
+  Decides the required java version for a given minecraft revision of format major.minor.build
+
+  :return: Java major version integer on success, None if the version could not be decided
+  """
+
+  version_strings = rev.split('.', 3)
+  major = int(version_strings[0])
+  minor = int(version_strings[1])
+
+  # Currently not interested in this information
+  # build = int(version_strings[2] if len(version_strings) == 3 else 0)
+
+  if major != 1:
+    return None
+
+  if minor == 19:
+    return 18
+
+  if minor == 18:
+    return 17
+
+  if minor == 17:
+    return 16
+
+  if minor <= 16 and minor >= 8:
+    return 11
+
+  return None
+
+def accept_eula(server_dir):
+  """
+  Creates or overrides eula.txt at the provided directory so that it contains an eula accepting statement
+
+  :param str server_dir: Path of the folder where the server is executed at
+  """
+
+  with open(os.path.join(server_dir, 'eula.txt'), 'w') as f:
+    f.write('eula=true\n')
+
+def setup_spigot(rev):
+  """
+  Installs the required java version, builds the required spigot JAR file and finally accepts the EULA
+
+  :return: Server JAR file path on success, None on errors
+  """
+
+  java_version = decide_java_version(rev)
+  if java_version is None:
+    logln_error(f'Could not decide on a java-version for minecraft-revision {rev}')
+    return None
+
+  home_dir = os.path.expanduser('~')
+  server_dir = os.path.join(home_dir, f'spigot-{rev}')
+
+  if not os.path.isdir(server_dir):
+    os.makedirs(server_dir)
+
+  if not setup_java(java_version):
+    logln_error(f'Could not set up the required java version, exiting')
+    return None
+
+  jar_path = build_spigot(rev, server_dir)
+
+  if jar_path is None:
+    logln_error(f'Could not build the required spigot jar for minecraft-revision {rev}, exiting')
+    return None
+
+  accept_eula(server_dir)
+  return jar_path
