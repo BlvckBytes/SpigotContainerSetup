@@ -119,6 +119,15 @@ def accept_eula(server_dir):
   with open(os.path.join(server_dir, 'eula.txt'), 'w') as f:
     f.write('eula=true\n')
 
+def delete_world_locks(server_dir):
+  """
+  It could happen that the server was exited non-gracefully, which left a world lock file. Delete those.
+
+  :param str server_dir: Path of the folder where the server is executed at
+  """
+
+  run_bash_live('rm -f world*/session.lock', server_dir)
+
 def setup_spigot(rev):
   """
   Installs the required java version, builds the required spigot JAR file and finally accepts the EULA
@@ -148,4 +157,5 @@ def setup_spigot(rev):
     return None
 
   accept_eula(server_dir)
+  delete_world_locks(server_dir)
   return jar_path

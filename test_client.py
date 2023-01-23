@@ -22,24 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import sys
-import time
+import socket
 
-from socket_terminal import socket_terminal
-
-# Prerequisites: Python3, Git
-
-def main():
-  rev = '1.18'
-  server = socket_terminal(rev, 8192)
-
-  if server is None:
-    sys.exit(1)
-
-  # Maybe add a terminal here in the future, just block for now
-  # FIXME: Properly stopping the minecraft- as well as the socket-server
-  while server.active:
-    time.sleep(.1)
-
-if __name__ == '__main__':
-  main()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+  s.connect(('127.0.0.1', 8192))
+  s.send('stop\n'.encode('utf-8'))
+  print('sent!')
