@@ -26,12 +26,14 @@ import sys
 import time
 
 from socket_terminal import socket_terminal
-
-# Prerequisites: Python3, Git
+from logger import logln_error
 
 def main():
-  rev = '1.18'
-  server = socket_terminal(rev, 8192)
+  if len(sys.argv) != 3:
+    logln_error(f'Usage: {sys.argv[0]} <rev> <socket_port>')
+    sys.exit(1)
+
+  server = socket_terminal(sys.argv[1], int(sys.argv[2]))
 
   if server is None:
     sys.exit(1)
