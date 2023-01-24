@@ -70,7 +70,7 @@ def socket_terminal(rev, port):
     cwd=os.path.dirname(jar_path)
   )
 
-  server = SocketServer('127.0.0.1', port)
+  server = SocketServer('0.0.0.0', port)
   server.start()
   server.onAnyReceive(lambda message: relay_socket_message(message, process))
 
