@@ -1,18 +1,14 @@
 """
 MIT License
-
 Copyright (c) 2023 BlvckBytes
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,8 +19,35 @@ SOFTWARE.
 """
 
 import socket
+import sys
+import threading
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-  s.connect(('127.0.0.1', 8192))
-  s.send('stop\n'.encode('utf-8'))
-  print('sent!')
+def read_socket(socket: socket.socket):
+  while True:
+    data = socket.recv(8192)
+
+    if data is None or len(data) == 0:
+      print('breaking')
+      break
+
+    print(data.decode('utf-8'), end='')
+
+def main():
+  if len(sys.argv) != 3:
+    print(f'Usage: {sys.argv[0]} <host> <port>')
+    sys.exit(1)
+
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((sys.argv[1], int(sys.argv[2])))
+  
+    t = threading.Thread(target=read_socket, args=(s,), name='socket_reader')
+    t.daemon = True
+    t.start()
+  
+    while True:
+      inp = input().strip()
+      s.send(f'{inp}\n'.encode('utf-8'))
+      print(f'> Sent "{inp}"')
+
+if __name__ == '__main__':
+  main()

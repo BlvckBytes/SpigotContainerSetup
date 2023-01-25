@@ -1,1 +1,1 @@
-# SpigotContainerSetup
+# SpigotServerSetup
