@@ -80,6 +80,9 @@ def decide_system_architecture():
 
   machine = platform.machine().lower()
 
+  if machine == 'x86_64':
+    return 'x64'
+
   if machine == 'arm64':
     return 'arm'
 
